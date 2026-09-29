@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>经济史 · 现场答题</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3ead8;
+    --paper-deep:#e9dfc8;
+    --ink:#1a1410;
+    --ink-soft:#3a2f25;
+    --cinnabar:#a52a1f;
+    --cinnabar-deep:#7a1c14;
+    --seal:#c0392b;
+    --gold:#8b6f3a;
+    --jade:#3d6b4a;
+    --muted:#7a6e5a;
+    --line:#8b7a5a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.85;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(139,111,58,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(165,42,31,0.04) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.15 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* 装饰边框 */
+  .border-frame{
+    position:fixed;inset:18px;
+    border:1px solid var(--line);
+    pointer-events:none;
+    z-index:1;
+  }
+  .border-frame::before{
+    content:'';position:absolute;inset:6px;
+    border:1px solid var(--line);
+    opacity:0.4;
+  }
+  /* 四角装饰 */
+  .corner{position:fixed;width:32px;height:32px;border:2px solid var(--cinnabar);z-index:2;pointer-events:none}
+  .corner.tl{top:14px;left:14px;border-right:none;border-bottom:none}
+  .corner.tr{top:14px;right:14px;border-left:none;border-bottom:none}
+  .corner.bl{bottom:14px;left:14px;border-right:none;border-top:none}
+  .corner.br{bottom:14px;right:14px;border-left:none;border-top:none}
+
+  .container{
+    max-width:920px;
+    margin:0 auto;
+    padding:60px 50px 80px;
+    position:relative;
+    z-index:5;
+  }
+
+  /* 标题 */
+  header{
+    text-align:center;
+    margin-bottom:56px;
+    position:relative;
+  }
+  .seal{
+    display:inline-block;
+    background:var(--cinnabar);
+    color:var(--paper);
+    padding:4px 10px;
+    font-family:'Noto Serif SC', serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:8px;
+    margin-bottom:18px;
+    border-radius:2px;
+    box-shadow:1px 1px 0 rgba(0,0,0,0.15);
+    transform:rotate(-1deg);
+  }
+  h1{
+    font-family:'Noto Serif SC', serif;
+    font-weight:900;
+    font-size:46px;
+    letter-spacing:12px;
+    color:var(--ink);
+    margin-bottom:8px;
+    text-indent:12px;
+  }
+  .subtitle{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color:var(--muted);
+    font-size:18px;
+    letter-spacing:2px;
+    margin-bottom:24px;
+  }
+  .header-rule{
+    width:120px;
+    height:1px;
+    background:var(--line);
+    margin:0 auto;
+    position:relative;
+  }
+  .header-rule::before,.header-rule::after{
+    content:'';position:absolute;top:50%;
+    width:6px;height:6px;
+    background:var(--cinnabar);
+    transform:translateY(-50%) rotate(45deg);
+  }
+  .header-rule::before{left:-12px}
+  .header-rule::after{right:-12px}
+
+  /* 进度 */
+  .progress{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-bottom:48px;
+    font-family:'Cormorant Garamond', serif;
+  }
+  .progress-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    color:var(--muted);
+    letter-spacing:2px;
+  }
+  .progress-dot{
+    width:10px;height:10px;
+    border:1.5px solid var(--line);
+    border-radius:50%;
+    transition:all 0.4s ease;
+  }
+  .progress-item.active .progress-dot{
+    background:var(--cinnabar);
+    border-color:var(--cinnabar);
+    box-shadow:0 0 0 4px rgba(165,42,31,0.15);
+  }
+  .progress-item.active{color:var(--cinnabar);font-weight:600}
+  .progress-item.done .progress-dot{
+    background:var(--ink);
+    border-color:var(--ink);
+  }
+  .progress-item.done{color:var(--ink)}
+
+  /* 题目卡片 */
+  .question-card{
+    background:rgba(255,251,240,0.6);
+    border:1px solid rgba(139,122,90,0.3);
+    padding:48px 50px;
+    position:relative;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.5) inset,
+      0 20px 40px -20px rgba(0,0,0,0.15);
+    margin-bottom:24px;
+  }
+  .question-card::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;
+    width:60px;height:60px;
+    border-top:2px solid var(--cinnabar);
+    border-left:2px solid var(--cinnabar);
+  }
+  .question-card::after{
+    content:'';
+    position:absolute;
+    bottom:0;right:0;
+    width:60px;height:60px;
+    border-bottom:2px solid var(--cinnabar);
+    border-right:2px solid var(--cinnabar);
+  }
+
+  .q-num{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .q-num-label{
+    font-family:'Cormorant Garamond', serif;
+    font-size:64px;
+    font-weight:600;
+    line-height:1;
+    color:var(--cinnabar);
+    letter-spacing:-2px;
+  }
+  .q-num-text{
+    font-size:14px;
+    letter-spacing:6px;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  .q-type{
+    display:inline-block;
+    font-size:12px;
+    padding:3px 10px;
+    background:var(--ink);
+    color:var(--paper);
+    letter-spacing:3px;
+    margin-left:8px;
+    border-radius:2px;
+  }
+  .q-type.multi{background:var(--cinnabar)}
+
+  .q-stem{
+    font-size:17px;
+    line-height:2;
+    color:var(--ink-soft);
+    margin-bottom:32px;
+    text-align:justify;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .option{
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    padding:18px 22px;
+    border:1px solid rgba(139,122,90,0.25);
+    background:rgba(255,255,255,0.3);
+    cursor:pointer;
+    transition:all 0.25s ease;
+    position:relative;
+    user-select:none;
+  }
+  .option:hover{
+    background:rgba(255,251,235,0.7);
+    border-color:var(--ink-soft);
+    transform:translateX(2px);
+  }
+  .option.selected{
+    background:rgba(165,42,31,0.06);
+    border-color:var(--cinnabar);
+    box-shadow:inset 3px 0 0 var(--cinnabar);
+  }
+  .option.disabled{
+    cursor:not-allowed;
+    opacity:0.6;
+  }
+  .option.disabled:hover{
+    transform:none;
+    background:rgba(255,255,255,0.3);
+  }
+  .option-letter{
+    font-family:'Cormorant Garamond', serif;
+    font-size:24px;
+    font-weight:600;
+    color:var(--cinnabar);
+    line-height:1.4;
+    flex-shrink:0;
+    width:24px;
+  }
+  .option-text{
+    font-size:15px;
+    line-height:1.9;
+    color:var(--ink-soft);
+    text-align:justify;
+    flex:1;
+  }
+  .option.correct{
+    background:rgba(61,107,74,0.1);
+    border-color:var(--jade);
+    box-shadow:inset 3px 0 0 var(--jade);
+  }
+  .option.correct .option-letter{color:var(--jade)}
+  .option.wrong{
+    background:rgba(165,42,31,0.12);
+    border-color:var(--cinnabar);
+    box-shadow:inset 3px 0 0 var(--cinnabar);
+  }
+  .option-mark{
+    position:absolute;
+    right:18px;top:50%;
+    transform:translateY(-50%);
+    font-size:22px;
+    font-weight:700;
+    opacity:0;
+    transition:opacity 0.3s;
+  }
+  .option.correct .option-mark{opacity:1;color:var(--jade)}
+  .option.correct .option-mark::before{content:'✓'}
+  .option.wrong .option-mark{opacity:1;color:var(--cinnabar)}
+  .option.wrong .option-mark::before{content:'✗'}
+
+  /* 操作区 */
+  .actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:36px;
+    padding-top:28px;
+    border-top:1px dashed rgba(139,122,90,0.4);
+  }
+  .feedback{
+    flex:1;
+    font-size:15px;
+    letter-spacing:1px;
+  }
+  .feedback.right{color:var(--jade);font-weight:600}
+  .feedback.wrong{color:var(--cinnabar);font-weight:600}
+  .feedback-hint{
+    display:block;
+    font-size:13px;
+    color:var(--muted);
+    font-weight:400;
+    margin-top:4px;
+    letter-spacing:0.5px;
+  }
+
+  .btn{
+    font-family:'Noto Serif SC', serif;
+    font-size:15px;
+    letter-spacing:6px;
+    padding:12px 30px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+    transition:all 0.25s ease;
+    text-indent:6px;
+  }
+  .btn:hover:not(:disabled){
+    background:var(--cinnabar);
+    border-color:var(--cinnabar);
+  }
+  .btn:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+  .btn.ghost{
+    background:transparent;
+    color:var(--ink);
+  }
+  .btn.ghost:hover:not(:disabled){
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+
+  /* 结束页 */
+  .finale{
+    text-align:center;
+    padding:80px 40px;
+    background:rgba(255,251,240,0.7);
+    border:1px solid rgba(139,122,90,0.3);
+    position:relative;
+  }
+  .finale::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    border:1px solid var(--cinnabar);
+    margin:8px;
+    pointer-events:none;
+  }
+  .finale-title{
+    font-size:32px;
+    letter-spacing:16px;
+    margin-bottom:30px;
+    text-indent:16px;
+  }
+  .score-display{
+    font-family:'Cormorant Garamond', serif;
+    font-size:120px;
+    font-weight:600;
+    line-height:1;
+    color:var(--cinnabar);
+    margin-bottom:8px;
+  }
+  .score-display .total{
+    color:var(--muted);
+    font-size:60px;
+  }
+  .score-label{
+    font-size:14px;
+    letter-spacing:8px;
+    color:var(--muted);
+    margin-bottom:36px;
+  }
+  .verdict{
+    font-size:18px;
+    color:var(--ink-soft);
+    margin-bottom:36px;
+    letter-spacing:2px;
+    line-height:2;
+  }
+
+  .hidden{display:none}
+
+  /* 答错时屏幕红光闪烁 */
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }
+  .shake{animation:shake 0.5s ease}
+  @keyframes flash{
+    0%,100%{background-color:transparent}
+    50%{background-color:rgba(165,42,31,0.15)}
+  }
+  body.wrong-flash{animation:flash 0.6s ease}
+
+  /* 音频指示器 */
+  .audio-indicator{
+    position:fixed;
+    bottom:36px;right:36px;
+    background:var(--cinnabar);
+    color:var(--paper);
+    padding:14px 24px;
+    font-size:13px;
+    letter-spacing:3px;
+    border-radius:2px;
+    box-shadow:0 8px 24px rgba(165,42,31,0.4);
+    z-index:100;
+    opacity:0;
+    transform:translateY(20px);
+    transition:all 0.4s ease;
+    pointer-events:none;
+  }
+  .audio-indicator.show{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .audio-indicator::before{
+    content:'♪ ';
+    margin-right:4px;
+  }
+
+  @media (max-width:680px){
+    .container{padding:40px 24px}
+    h1{font-size:30px;letter-spacing:6px}
+    .question-card{padding:32px 24px}
+    .q-num-label{font-size:48px}
+    .q-stem{font-size:15px}
+    .actions{flex-direction:column;align-items:stretch;gap:20px}
+    .feedback{order:2}
+    .btn{width:100%}
+    .corner{width:20px;height:20px}
+    .border-frame{inset:10px}
+    .score-display{font-size:80px}
+    .score-display .total{font-size:42px}
+    .finale-title{font-size:22px;letter-spacing:8px}
+  }
+</style>
+</head>
+<body>
+<div class="border-frame"></div>
+<span class="corner tl"></span>
+<span class="corner tr"></span>
+<span class="corner bl"></span>
+<span class="corner br"></span>
+
+<div class="container">
+  <header>
+    <div class="seal">经 济 史</div>
+    <h1>现 场 答 题</h1>
+    <div class="subtitle">Economic History</div>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="progress" id="progress"></div>
+
+  <div id="quizArea"></div>
+
+  <div class="finale hidden" id="finale">
+    <div class="finale-title">考 毕</div>
+    <div class="score-display"><span id="scoreNum">0</span><span class="total"> / 7</span></div>
+    <div class="score-label">G E N E R A L &nbsp; S C O R E</div>
+    <div class="verdict" id="verdict"></div>
+    <button class="btn ghost" onclick="restart()">重 新 答 题</button>
+  </div>
+</div>
+
+
+<!-- 三个音频元素,文件需放在同一文件夹 -->
+<audio id="audio1" preload="auto">
+  <source src="audio1.mp3" type="audio/mpeg">
+</audio>
+<audio id="audio2" preload="auto">
+  <source src="audio2.mp3" type="audio/mpeg">
+</audio>
+<audio id="audio3" preload="auto">
+  <source src="audio3.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const questions = [
+  {
+    id: 1,
+    type: 'single',
+    answer: ['B'],
+    abstain: 'E',
+    stem: '“帝承神、熹之后，慨然有为。即位之初，沉机独断，刈除奸逆，天下想望治平。惜乎大势已倾，积习难挽。”评价的对象和态度分别是？',
+    options: {
+      A: '钱俶；同情，认可',
+      B: '崇祯；同情，认可',
+      C: '钱俶；批判，鄙夷',
+      D: '崇祯；批判，鄙夷',
+      E: '弃权'
+    },
+    explain: '此段出自《明史·庄烈帝本纪》对崇祯帝的评价，“沉机独断，刈除奸逆”体现同情认可，“惜乎大势已倾”点明悲剧性，故选 B。'
+  },
+  {
+    id: 2,
+    type: 'single',
+    answer: ['D'],
+    abstain: 'E',
+    stem: '司马光有言曰：“天地所生财货百物，不在民，则在官，彼设法夺民，其害乃甚于加赋。”对这段话评价合理的是：',
+    options: {
+      A: '反映了儒家思想对“利”的完全忽视。',
+      B: '表达了对熙宁变法的支持。',
+      C: '表达了重农抑商的思想。',
+      D: '反映了儒家思想对发展和大集体之“利”的轻视。',
+      E: '弃权'
+    },
+    explain: '司马光认为官府夺民之财害甚于加赋，反映儒家重视民生、反对官府与民争利的思想，对“大集体之利”（国家过度征敛）持警惕态度，故选 D。'
+  },
+  {
+    id: 3,
+    type: 'single',
+    answer: ['C'],
+    abstain: 'E',
+    stem: '阅读以下出自《尚书·禹贡》的片段：荆及衡阳惟荆州。江、汉朝宗于海，九江孔殷。沱、潜既道，云土、梦作乂。厥土惟涂泥，厥田惟下中，厥赋上下。厥贡羽、毛、齿、革惟金三品，杶、干、栝、柏、砺、砥、砮、丹惟箘簵，楛。三邦厎贡厥名，包匦菁茅，厥篚玄纁玑组，九江纳锡大龟。浮于江、沱、潜、汉，逾于洛，至于南河。其中“厥田惟下中”的意思是：',
+    options: {
+      A: '只有位于地势低的地方的土地才适于耕种。',
+      B: '耕地位于地势较低的地方中的中间区域。',
+      C: '耕地质量是下等中的中等。',
+      D: '耕地质量是中等中的下等。',
+      E: '弃权'
+    },
+    explain: '“厥田惟下中”为《禹贡》九等田制中的评级，“下中”即下等中的中等（第八等），故选 C。'
+  },
+  {
+    id: 4,
+    type: 'single',
+    answer: ['B'],
+    abstain: 'E',
+    stem: '根据竺可桢的研究，我国大部分地区的年平均气温在距今五千年到三千年之间，与现在相比如何？',
+    options: {
+      A: '较今日高约10摄氏度',
+      B: '较今日高约2摄氏度',
+      C: '较今日低约2摄氏度',
+      D: '较今日低约10摄氏度',
+      E: '弃权'
+    },
+    explain: '竺可桢《中国近五千年来气候变迁的初步研究》指出，仰韶文化至殷商时期（约五千年到三千年）年均温较今高约 2℃，故选 B。'
+  },
+  {
+    id: 5,
+    type: 'single',
+    answer: ['C'],
+    abstain: 'E',
+    stem: '根据徐光启的考证，牛耕在中国起源于哪一时代？',
+    options: {
+      A: '炎黄传说时代',
+      B: '夏朝',
+      C: '春秋战国',
+      D: '汉代',
+      E: '弃权'
+    },
+    explain: '徐光启《农政全书》考证牛耕起源于春秋战国时期，故选 C。'
+  },
+  {
+    id: 6,
+    type: 'single',
+    answer: ['A'],
+    abstain: 'E',
+    stem: '《史记·周世家》有：“公季卒，子昌立，是为西伯。西伯曰文王，遵后稷、公刘之业，则古公、公季之法，笃仁，敬老，慈少。礼下贤者，日中不暇食以待士，士以此多归之。伯夷、叔齐在孤竹，闻西伯善养老，盍往归之。太颠、闳夭、散宜生、鬻子、辛甲大夫之徒皆往归之。”根据传说，周人祖先后稷的贡献是：',
+    options: {
+      A: '实方实苞，实种实褎，实发实秀，实坚实好，实颖实栗。',
+      B: '别九州，随山浚川，任土作贡。',
+      C: '作结绳而为罔罟，以佃以渔。',
+      D: '刳木为舟，剡木为楫。',
+      E: '弃权'
+    },
+    explain: '“实方实苞，实种实褎”出自《诗经·大雅·生民》，颂后稷教民稼穑、辨别五谷之功德，故选 A。'
+  },
+  {
+    id: 7,
+    type: 'single',
+    answer: ['D'],
+    abstain: 'E',
+    stem: '在当时自然经济占绝对优势的情况下，以货币征税的情况还是很少的，在国家财政中也不占重要地位；主要的征税方式是以实物和力役征收，正像孟轲说的：“有布缕之征，粟米之征，力役之征。”关于征收赋税的门类和偏好，孟子的主张是：',
+    options: {
+      A: '征收多种赋税但每种数量较少；以“粟米之征”为主。',
+      B: '征收多种赋税但每种数量较少；以“力役之征”为主。',
+      C: '征收单一税种；以“粟米之征”为主。',
+      D: '征收单一税种；以“力役之征”为主。',
+      E: '弃权'
+    },
+    explain: '《孟子·尽心下》主张“君子用其一，缓其二”，即征收单一税种，并认为力役之征若调配得当可兼顾民生与国事，故选 D。'
+  }
+];
+
+let state = {
+  current: 0,
+  selected: [],
+  answered: false,
+  score: 0,
+  results: [],
+  abstainCount: 0,
+  wrongCount: 0
+};
+
+const $ = id => document.getElementById(id);
+
+function renderProgress(){
+  const p = $('progress');
+  p.innerHTML = questions.map((q,i) => {
+    let cls = '';
+    if(state.results[i] !== undefined){
+      cls = 'done';
+    } else if(i === state.current){
+      cls = 'active';
+    }
+    return `<div class="progress-item ${cls}">
+      <span class="progress-dot"></span>
+      <span>${String(i+1).padStart(2,'0')}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderQuestion(){
+  const q = questions[state.current];
+  const isMulti = q.type === 'multi';
+  const opts = Object.entries(q.options).map(([letter, text]) => `
+    <div class="option" data-letter="${letter}" onclick="toggleSelect('${letter}')">
+      <span class="option-letter">${letter}</span>
+      <span class="option-text">${text}</span>
+      <span class="option-mark"></span>
+    </div>
+  `).join('');
+
+  $('quizArea').innerHTML = `
+    <div class="question-card" id="card">
+      <div class="q-num">
+        <span class="q-num-label">第 ${String(state.current + 1).padStart(2,'0')} 题</span>
+        <div>
+          <span class="q-type ${isMulti ? 'multi' : ''}">${isMulti ? '多 选' : '单 选'}</span>
+        </div>
+      </div>
+      <div class="q-stem">${q.stem}</div>
+      <div class="options" id="options">${opts}</div>
+      <div class="actions">
+        <div class="feedback" id="feedback"></div>
+        <button class="btn" id="submitBtn" onclick="submit()" disabled>提 交</button>
+        <button class="btn ghost hidden" id="nextBtn" onclick="next()">下 一 题 →</button>
+      </div>
+    </div>
+  `;
+  state.selected = [];
+  state.answered = false;
+  renderProgress();
+}
+
+function toggleSelect(letter){
+  if(state.answered) return;
+  const q = questions[state.current];
+  if(q.type === 'single'){
+    state.selected = [letter];
+  } else {
+    if(state.selected.includes(letter)){
+      state.selected = state.selected.filter(x => x !== letter);
+    } else {
+      state.selected.push(letter);
+    }
+  }
+  document.querySelectorAll('.option').forEach(el => {
+    el.classList.toggle('selected', state.selected.includes(el.dataset.letter));
+  });
+  $('submitBtn').disabled = state.selected.length === 0;
+}
+
+function arraysEqualUnordered(a, b){
+  if(a.length !== b.length) return false;
+  const sa = [...a].sort().join('');
+  const sb = [...b].sort().join('');
+  return sa === sb;
+}
+
+function submit(){
+  const q = questions[state.current];
+  const selected = state.selected;
+  const abstainLetter = q.abstain;
+
+  // 判断是否弃权（选了该题的弃权选项）
+  const isAbstain = selected.length === 1 && selected[0] === abstainLetter;
+
+  // 判断是否答对
+  const correct = !isAbstain && arraysEqualUnordered(selected, q.answer);
+
+  state.answered = true;
+  state.results[state.current] = correct;
+
+  if(isAbstain){
+    state.abstainCount++;
+    state.results[state.current] = 'abstain';
+  } else if(correct){
+    state.score++;
+  } else {
+    state.wrongCount++;
+  }
+
+  // 标记所有选项
+  document.querySelectorAll('.option').forEach(el => {
+    const letter = el.dataset.letter;
+    el.classList.add('disabled');
+    el.classList.remove('selected');
+    if(q.answer.includes(letter)){
+      el.classList.add('correct');
+    } else if(selected.includes(letter) && !isAbstain){
+      el.classList.add('wrong');
+    }
+  });
+
+  const fb = $('feedback');
+  if(isAbstain){
+    stopAllAudio();
+    playAudio('audio1', '弃权提示音');
+    fb.className = 'feedback';
+    fb.style.color = 'var(--muted)';
+    fb.innerHTML = `— 弃 权 &nbsp;·&nbsp; 正解为 <b>${q.answer.join('、')}</b>
+      <span class="feedback-hint">${q.explain}</span>`;
+  } else if(correct){
+    stopAllAudio();
+    playAudio('audio2', '答对提示音');
+    fb.className = 'feedback right';
+    fb.style.color = '';
+    fb.innerHTML = `✓ 答 对 &nbsp;·&nbsp; 正解为 <b>${q.answer.join('、')}</b>
+      <span class="feedback-hint">${q.explain}</span>`;
+  } else {
+    stopAllAudio();
+    playAudio('audio3', '答错提示音');
+    fb.className = 'feedback wrong';
+    fb.style.color = '';
+    fb.innerHTML = `✗ 答 错 &nbsp;·&nbsp; 正解为 <b>${q.answer.join('、')}</b>
+      <span class="feedback-hint">${q.explain}</span>`;
+    $('card').classList.add('shake');
+    document.body.classList.add('wrong-flash');
+    setTimeout(() => {
+      $('card').classList.remove('shake');
+      document.body.classList.remove('wrong-flash');
+    }, 600);
+  }
+
+  $('submitBtn').classList.add('hidden');
+  $('nextBtn').classList.remove('hidden');
+  if(state.current === questions.length - 1){
+    $('nextBtn').textContent = '查 看 总 评 →';
+  }
+  renderProgress();
+}
+
+function playAudio(id, label){
+  stopAllAudio();
+  const audio = $(id);
+  audio.currentTime = 0;
+  audio.play().catch(err => {
+    console.warn('音频播放失败:', err);
+  });
+}
+
+function stopAllAudio(){
+  ['audio1','audio2','audio3'].forEach(id => {
+    const a = $(id);
+    if(a){ a.pause(); a.currentTime = 0; }
+  });
+}
+
+function next(){
+  stopAllAudio();
+  if(state.current < questions.length - 1){
+    state.current++;
+    renderQuestion();
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    showFinale();
+  }
+}
+
+function showFinale(){
+  $('quizArea').classList.add('hidden');
+  $('finale').classList.remove('hidden');
+  $('scoreNum').textContent = state.score;
+  let verdict = '';
+  const total = questions.length;
+  if(state.score === total){
+    verdict = '题 目 全 中，功 力 深 厚。<br>未 闻 警 示 之 音，亦 一 雅 事。';
+  } else if(state.wrongCount > 3){
+    verdict = '答 错 超 3 次，亟 须 重 读 经 济 史。<br>警 示 之 音，已 入 耳 数 次。';
+  } else if(state.abstainCount > 3){
+    verdict = '弃 权 超 3 次，犹 豫 徘 徊，未 敢 决 断。<br>当 审 题 慎 思，不 可 轻 言 放 弃。';
+  } else if(state.score === 0){
+    verdict = '全 错 ——<br>警 示 之 音 回 荡 不 绝，当 痛 定 思 痛。';
+  } else {
+    verdict = '中 ' + state.score + ' 题，余 ' + (total - state.score) + ' 题 当 复 习。<br>警 示 之 音，听 之 ' + state.wrongCount + ' 回。';
+  }
+  $('verdict').innerHTML = verdict;
+  // 完成态进度
+  state.current = questions.length;
+  renderProgress();
+}
+
+function restart(){
+  stopAllAudio();
+  state = { current:0, selected:[], answered:false, score:0, results:[], abstainCount:0, wrongCount:0 };
+  $('finale').classList.add('hidden');
+  $('quizArea').classList.remove('hidden');
+  renderQuestion();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// 启动
+renderQuestion();
+</script>
+</body>
+</html>
